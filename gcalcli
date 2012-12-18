@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/opt/local/bin/python2.7
 
 # ** The MIT License **
 #
@@ -237,7 +237,6 @@ def PrintMsg(color, msg):
 
 
 def DebugPrint(msg):
-    return
     sys.stdout.write(str(CLR_YLW()))
     sys.stdout.write(msg)
     sys.stdout.write(str(CLR_NRM()))
@@ -1072,7 +1071,7 @@ class gcalcli:
 
     def ImportICS(self, verbose=False, icsFile=None):
         try:
-            import vobject
+            import icalendar
         except:
             PrintErrMsg('Python vobject module not installed!\n')
             sys.exit(1)
@@ -1081,34 +1080,34 @@ class gcalcli:
 
         if icsFile:
             try:
-                f = file(icsFile)
+                f = open(icsFile, 'rb')
             except Exception, e:
                 PrintErrMsg("Error: " + str(e) + "!\n")
                 sys.exit(1)
 
-        while True:
-
-            try:
-                v = vobject.readComponents(f).next()
-            except StopIteration:
-                break
-
-            ve = v.vevent
+        vobject = icalendar.Calendar.from_ical(f.read())
+        for vt in vobject.walk("VTIMEZONE"):
+          print vt
+        for ve in vobject.walk("VEVENT"):
             event = gdata.calendar.CalendarEventEntry()
+            event.title = ve.decoded("summary", "")
+            event.where = gdata.calendar.Where(value_string=ve.decoded("location"))
+            try:
+                dtstart = ve.decoded('DTSTART')
+                print icalendar.vDatetime.from_ical(ve.get('dtstart'), ve.get('dtstart').params['TZID'])
 
-            if hasattr(ve, 'summary'):
-                DebugPrint("SUMMARY: %s\n" % ve.summary.value)
-                if verbose:
-                    print "Event........%s" % ve.summary.value
-                event.title = atom.Title(text=ve.summary.value)
+                dtend = ve.decoded('dtend')
+                print dtstart
+                return
 
-            if hasattr(ve, 'location'):
-                DebugPrint("LOCATION: %s\n" % ve.location.value)
-                if verbose:
-                    print "Location.....%s" % ve.location.value
-                event.where = gdata.calendar.Where(value_string=ve.location.value)
 
-            if not hasattr(ve, 'dtstart') or not hasattr(ve, 'dtend'):
+
+                print ve['dtstart']
+                print ve.get('dtstart').to_ical(ve.get('dtstart').params['TZID'])
+                print ve.get('dtstart').to_ical()
+                print ve.get('dtend')
+                return
+            except KeyError:
                 PrintErrMsg("Error: event does not have a dtstart and dtend!\n")
                 continue
 
