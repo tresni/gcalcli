@@ -1062,7 +1062,7 @@ class gcalcli:
                     pass # should not happen
 
         except Exception, e:
-            PrintErrMsg("Error: " + e["reason"] + "\n")
+            PrintErrMsg("Error: %s -- %s\n" % (e[0]["reason"], e[0]["body"]))
             sys.exit(1)
 
 
@@ -1251,7 +1251,7 @@ class gcalcli:
                 try:
                     self.gcal.InsertEvent(event, self._TargetCalendar())
                 except Exception, e:
-                    PrintErrMsg("Error: " + e[0] + "\n")
+                    PrintErrMsg("Error: %s -- %s\n" % (e[0]["reason"], e[0]["body"]))
                     sys.exit(1)
                 continue
 
@@ -1261,7 +1261,7 @@ class gcalcli:
                 try:
                     self.gcal.InsertEvent(event, self._TargetCalendar())
                 except Exception, e:
-                    PrintErrMsg("Error: " + e[0] + "\n")
+                    PrintErrMsg("Error: %s -- %s\n" % (e[0]["reason"], e[0]["body"]))
                     sys.exit(1)
             elif val == 's':
                 continue
