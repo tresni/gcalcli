@@ -1071,9 +1071,12 @@ class gcalcli:
 
     def ImportICS(self, verbose=False, icsFile=None):
         try:
-            import icalendar
-        except:
-            PrintErrMsg('Python vobject module not installed!\n')
+          import sys, os
+          sys.path.insert(0, os.path.join(os.path.basename(__file__), "icalendar"))
+          print sys.path
+          import icalendar
+        except Exception, e:
+            PrintErrMsg('Python vobject module not installed!\n' + str(e))
             sys.exit(1)
 
         f = sys.stdin
@@ -1086,21 +1089,17 @@ class gcalcli:
                 sys.exit(1)
 
         vobject = icalendar.Calendar.from_ical(f.read())
-        for vt in vobject.walk("VTIMEZONE"):
-          print vt
         for ve in vobject.walk("VEVENT"):
             event = gdata.calendar.CalendarEventEntry()
             event.title = ve.decoded("summary", "")
             event.where = gdata.calendar.Where(value_string=ve.decoded("location"))
             try:
                 dtstart = ve.decoded('DTSTART')
-                print icalendar.vDatetime.from_ical(ve.get('dtstart'), ve.get('dtstart').params['TZID'])
-
                 dtend = ve.decoded('dtend')
-                print dtstart
+                print dtstart, dtend
+                print dtstart.tzinfo, dtend.tzinfo
+                print icalendar.custom_timezones
                 return
-
-
 
                 print ve['dtstart']
                 print ve.get('dtstart').to_ical(ve.get('dtstart').params['TZID'])
