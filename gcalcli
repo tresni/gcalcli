@@ -42,7 +42,7 @@
 #
 
 __program__ = 'gcalcli'
-__version__ = 'v2.2'
+__version__ = 'v2.3'
 __author__  = 'Eric Davis'
 
 import inspect
@@ -728,6 +728,7 @@ class gcalcli:
 
         for event in eventList:
             tmpDayStr = event.s.strftime(dayFormat)
+            tmpDayEnd = event.e.strftime(dayFormat)
             tmpTimeStr = event.s.strftime("%H:%M")
             tmpTimeStp = event.e.strftime("%H:%M")
             if event.where and 0 in event.where and event.where[0].value_string:
@@ -738,6 +739,11 @@ class gcalcli:
                 tmpContent = event.content.text
             else:
                 tmpContent = ''
+            str = "%s\t%s\t%s\t%s\t%s\t%s\t%s" % (
+                tmpDayStr, tmpTimeStr, tmpDayEnd, tmpTimeStp,
+                self._ValidTitle(event.title.text).strip(),
+                tmpWhere, tmpContent
+            )
             str = "%s\t%s\t%s\t%s\t%s\t%s" % (
                 tmpDayStr, tmpTimeStr, tmpTimeStp,
                 self._ValidTitle(event.title.text).strip(),
