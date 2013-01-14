@@ -87,8 +87,12 @@ gcalcli [options] command [command args]
 
   --24hr                   show all dates in 24 hour format
 
-  --details                show all event details (i.e. length, location,
-                           reminders, contents)
+  --detail-all             show event details in the 'agenda' output
+  --detail-location        (i.e. all, location, length, reminders, description)
+  --detail-length          the description width defaults to 80 characters
+  --detail-reminders
+  --detail-descr
+  --detail-descr-width
 
   --ignore-started         ignore old or already started events
                            - when used with the 'agenda' command, ignore events
@@ -117,8 +121,21 @@ gcalcli [options] command [command args]
   --tsv                    tab-separated output for 'agenda'. Format is:
                            'date start' 'start time' 'date end' 'end time' 'title' 'location' 'description'
 
-  --locale                 set a custom locale (i.e. 'de_DE.UTF-8'). Check the
+  --locale <locale>        set a custom locale (i.e. 'de_DE.UTF-8'). Check the
                            supported locales of your system first.
+
+  --reminder <mins>        number of minutes to use when setting reminders for
+                           the 'quick' and 'add' commands; if not specified,
+                           Google code's default behavior occurs: no reminder is
+                           set (documented, incorrectly, otherwise: as using the
+                           default for the calendar, but this does not actually
+                           happen)
+
+   --title <title>         event details used by the 'add' command
+   --where <location>      - the duration is specified in minutes
+   --when <datetime>       - make sure to quote strings with spaces
+   --duration <#>          - the datetime format is 'MM/DD/YYYY HH:MM'
+   --descr <description>   - the '--reminder' option can be specified as well
 
  Commands:
 
@@ -155,6 +172,18 @@ gcalcli [options] command [command args]
                               'Dinner with Eric 7pm tomorrow'
                               '5pm 10/31 Trick or Treat'
 
+  add                      add a detailed event to a calendar
+                           - if a --cal is not specified then the event is
+                             added to the default calendar
+                           - example:
+                              gcalcli --title 'Analysis of Algorithms Final'
+                                      --where UCI
+                                      --when '12/14/2012 10:00'
+                                      --duration 60
+                                      --descr 'It is going to be hard!'
+                                      --reminder 30
+                                      add
+
   import [-v] [file]       import an ics/vcal file to a calendar
                            - if a --cal is not specified then the event is
                              added to the default calendar
@@ -183,7 +212,11 @@ the following:
  * the config file
  * or interactively when prompted
 
-In any case make sure you protect the information.
+In any case make sure you protect the information. It is highly recommended
+you turn on
+[Google's 2-Step Verification](http://support.google.com/accounts/bin/topic.py?hl=en&topic=28786)
+and use different application specific passwords for each system you're using
+gcalcli on.
 
 #### HTTP Proxy Support
 
@@ -222,7 +255,12 @@ pw: <password>
 cals: <type>
 cal: <name>[#color], <name>[#color], ...
 24hr: <true|false>
-details: <true|false>
+detail-all: <true|false>
+detail-location: <true|false>
+detail-length: <true|false>
+detail-reminders: <true|false>
+detail-descr: <true|false>
+detail-descr-width: <width>
 ignore-started: <true|false>
 width: <width>
 mon: <true|false>
@@ -235,6 +273,7 @@ cal-freebusy-color: <color>
 date-color: <color>
 border-color: <color>
 locale: <locale>
+reminder: <mins>
 ```
 
 Note that you can specify a shell command and the output will be the value for
@@ -244,6 +283,30 @@ backtick (i.e. '`'). An example is pulling a password from gpg:
 ```
 pw: `gpg --decrypt ~/mypw.gpg`
 ```
+
+#### Importing VCS/VCAL/ICS Files from Exchange (or other)
+
+Importing events from files is easy with gcalcli. The 'import' command accepts
+a filename on the command line or can read from standard input. Here is a script
+that can be used as an attachment handler for Thunderbird or in a mailcap entry
+with Mutt (or in Mutt you could just use the attachment viewer and pipe command):
+
+```
+#!/bin/bash
+
+TERMINAL=urxvtc
+CONFIG=~/.gcalclirc
+
+$TERMINAL -e bash -c "echo 'Importing invite...' ; \
+                      gcalcli --config=$CONFIG import -v \"$1\" ; \
+                      read -p 'press enter to exit: '"
+```
+
+Note that with Thunderbird you'll have to have the 'Show All Body Parts'
+extension installed for seeing the calendar attachments when not using
+'Lightning'. See this
+[bug report](https://bugzilla.mozilla.org/show_bug.cgi?id=505024)
+for more details.
 
 #### Event Popup Reminders Using Cron
 
