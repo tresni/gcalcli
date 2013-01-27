@@ -551,9 +551,13 @@ class gcalcli:
                 if dayNum < 0:
                     dayNum = 6
 
-            if event.s >= startDateTime and event.s < endDateTime:
+            offset = 0
+            start = event.s
 
-                if event.s.hour == 0 and event.s.minute == 0 and \
+            while start >= startDateTime and start <= endDateTime and start < event.e:
+                if start != event.s:
+                    tmpTimeStr = ''
+                elif event.s.hour == 0 and event.s.minute == 0 and \
                    event.e.hour == 0 and event.e.minute == 0:
                     tmpTimeStr = ''
                 elif self.military:
@@ -564,12 +568,15 @@ class gcalcli:
                         event.s.strftime('%p').lower()
 
                 # newline and empty string are the keys to turn off coloring
-                weekEventStrings[dayNum] += \
+                weekEventStrings[dayNum + offset] += \
                     "\n" + \
                     str(self._CalendarColor(event.gcalcli_cal)) + \
                     tmpTimeStr.strip() + \
                     " " + \
                     self._ValidTitle(event.title.text).strip()
+
+                offset += 1
+                start += timedelta(days=offset)
 
         return weekEventStrings
 
